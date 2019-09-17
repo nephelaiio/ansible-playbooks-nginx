@@ -1,7 +1,7 @@
 ---
 - name: Install nginx proxy
 
-  hosts: nginx_proxy
+  hosts: "{{ target_hosts | default('nginx_proxy') }}"
 
   become: yes
 
@@ -11,8 +11,8 @@
     acme_certificate_chainfile: "/etc/nginx/{{ acme_certificate_domain }}.chain.crt"
     acme_certificate_keyfile: "/etc/nginx/{{ acme_certificate_domain }}.key"
     acme_certificate_add_ca: yes
-    acme_certificate_aws_accesskey_id: "{{ nginx_proxy_aws_access_key_id | default(lookup('env', 'AWS_ACCESS_KEY_ID')) }}"
-    acme_certificate_aws_accesskey_secret: "{{ nginx_proxy_aws_secret_access_key | default(lookup('env', 'AWS_SECRET_ACCESS_KEY')) }}"
+    acme_certificate_aws_accesskey_id: "{{ nginx_proxy_aws_accesskey_id | default(lookup('env', 'AWS_ACCESS_KEY_ID')) }}"
+    acme_certificate_aws_accesskey_secret: "{{ nginx_proxy_aws_accesskey_secret | default(lookup('env', 'AWS_SECRET_ACCESS_KEY')) }}"
 
     nginx_cleanup_config: yes
     nginx_install_from: os_repository
@@ -85,13 +85,17 @@
             zone_name: upstream
             zone_size: 32k
             sticky_cookie: false
-            servers: "{{ awx_app_servers }}"
+            servers: "{{ nginx_proxy_upstream_servers }}"
 
   roles:
 
     - nephelaiio.plugins
 
   tasks:
+
+    - fail:
+        msg: "nginx_proxy_url must be defined"
+      when: nginx_proxy_url is not defined
 
     - fail:
         msg: "only one of nginx_proxy_upstream_group and nginx_proxy_upstream_servers must be defined"
@@ -111,10 +115,10 @@
 
         - name: build list of upstream servers
           set_fact:
-            nginx_proxy_upstream_servers: "{{ (awx_app_servers | default({})) | combine ({ item: awx_item_server}) }}"
+            nginx_proxy_upstream_servers: "{{ (nginx_proxy_upstream_servers | default({})) | combine ({ item: nginx_proxy_item_server}) }}"
           loop: "{{ groups[nginx_proxy_upstream_group] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
           vars:
-            awx_item_server:
+            nginx_proxy_item_server:
               address: "{{ item }}"
               port: "{{ nginx_proxy_upstream_port | default('80') }}"
               weight: 1
