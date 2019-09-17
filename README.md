@@ -45,12 +45,6 @@ nginx_proxy_upstream_servers:
 nginx_proxy_upstream_group: nginx_proxy_upstream
 ```
 
-## Dependencies
-
-This playbook has the following git submodule dependencies:
-
-* [plugins/mitogen](https://github.com/dw/mitogen)
-
 ## Example Invocation
 
 ```
