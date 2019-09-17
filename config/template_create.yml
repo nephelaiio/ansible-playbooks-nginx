@@ -1,0 +1,66 @@
+---
+- block:
+
+    - name: create job template - {{ template.name }}
+      command: >
+        awx-cli job_template create --force-on-exists --format=json
+          {{ tpl_name }}
+          {{ tpl_description }}
+          {{ tpl_job_type }}
+          {{ tpl_inventory }}
+          {{ tpl_project }}
+          {{ tpl_playbook }}
+          {{ tpl_forks }}
+          {{ tpl_limit }}
+          {{ tpl_verbosity }}
+          {{ tpl_timeout }}
+          {{ tpl_skiptags }}
+          {{ tpl_askskiptags }}
+          {{ tpl_askinventory }}
+          {{ tpl_askcredentials }}
+          {{ tpl_extra_vars }}
+      vars:
+        tpl_name: "--name {{ template.name | quote }}"
+        tpl_description: "{{ ('--description ' + template.description | string | quote) if 'description' in template else '' }}"
+        tpl_job_type: "{{ ('--job-type ' + template.job_type | string | quote) if 'job_type' in template else '' }}"
+        tpl_inventory: "{{ ('--inventory ' + template.inventory | string | quote) if 'inventory' in template else '--ask-inventory-on-launch true' }}"
+        tpl_project: "--project {{ template.project | quote }}"
+        tpl_playbook: "--playbook {{ template.playbook | quote }}"
+        tpl_forks: "{{ ('--forks ' + template.forks | string | quote) if 'forks' in template else '' }}"
+        tpl_limit: "{{ ('--limit ' + template.limit | string | quote) if 'limit' in template else '' }}"
+        tpl_verbosity: "{{ ('--verbosity ' + template.verbosity | string | quote) if 'verbosity' in template else '' }}"
+        tpl_timeout: "{{ ('--timeout ' + (template.timeout | string | quote) ) if 'timeout' in template else '' }}"
+        tpl_jobtags: "{{ ('--job-tags ' + ([template.job_tags] | flatten | join(',') | quote)) if 'job_tags' in template else '' }}"
+        tpl_skiptags: "{{ ('--skip-tags ' + ([template.skip_tags] | flatten | join(',') | quote)) if 'skip_tags' in template else '' }}"
+        tpl_askskiptags: "{{ ('--ask-skip-tags-on-launch ' + template.ask_skip_tags | string | quote) if 'ask_skip_tags' in template else '' }}"
+        tpl_askinventory: "{{ ('--ask-inventory-on-launch ' + template.ask_inventory | string | quote) if 'ask_inventory' in template else '' }}"
+        tpl_askcredentials: "{{ ('--ask-credentials-on-launch ' + template.ask_credentials | string | quote) if 'ask_credentials' in template else '' }}"
+        tpl_extra_vars: "{{ ('--extra-vars ' + template.extra_vars | string | quote) if 'extra_vars' in template else '' }}"
+      register: awx_template_result
+
+    - name: register template object - {{ template.name }}
+      set_fact:
+        template_object: "{{ awx_template_result.stdout | from_json }}"
+
+    - name: add template credentials - {{ template.name }}
+      uri:
+        url: "{{ awx_url }}/api/v2/job_templates/{{ template_object.id }}/credentials/"
+        method: POST
+        body_format: json
+        body: "{{ lookup('template', 'template_credential.j2.json') }}"
+        user: "{{ awx_admin_user | default('admin') }}"
+        password: "{{ awx_admin_pass }}"
+        force_basic_auth: yes
+        status_code: 204
+      loop_control:
+        loop_var: tpl_credential
+        label: "{{ tpl_credential.name }}"
+      vars:
+        credential_name: "{{ tpl_credential.name }}"
+        credential_kind: "{{ tpl_credential.kind }}"
+      loop: "{{ template.credentials | default([]) }}"
+      when:
+        - not tpl_credential.name in (template_object.summary_fields.credentials | map(attribute='name'))
+
+  tags:
+    - templates
