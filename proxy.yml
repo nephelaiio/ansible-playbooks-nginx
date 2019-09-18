@@ -14,6 +14,20 @@
     acme_certificate_aws_accesskey_id: "{{ nginx_proxy_aws_accesskey_id | default(lookup('env', 'AWS_ACCESS_KEY_ID')) }}"
     acme_certificate_aws_accesskey_secret: "{{ nginx_proxy_aws_accesskey_secret | default(lookup('env', 'AWS_SECRET_ACCESS_KEY')) }}"
 
+    nginx_proxy_headers_default:
+      header_host:
+        name: Host
+        value: $host
+      header_x_forwarded_for:
+        name: X-Forwarded-For
+        value: $proxy_add_x_forwarded_for
+      header_upgrade:
+        name: Upgrade
+        value: $http_upgrade
+      header_connection:
+        name: Connection
+        value: Upgrade
+
     nginx_cleanup_config: yes
     nginx_install_from: os_repository
     nginx_cleanup_config_path:
@@ -65,19 +79,7 @@
             default:
               location: /
               proxy_pass: "http://{{ acme_certificate_domain }}"
-              proxy_set_header:
-                header_host:
-                  name: Host
-                  value: $host
-                header_upgrade:
-                  name: Upgrade
-                  value: $http_upgrade
-                header_connection:
-                  name: Connection
-                  value: Upgrade
-                header_x_forwarded_for:
-                  name: X-Forwarded-For
-                  value: $proxy_add_x_forwarded_for
+              proxy_set_header: "{{ nginx_proxy_headers | default(nginx_proxy_headers_default | combine(nginx_proxy_headers_extra | default({}))) }}"
         upstreams:
           upstream:
             name: "{{ acme_certificate_domain }}"
