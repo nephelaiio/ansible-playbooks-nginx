@@ -1,6 +1,6 @@
 # nephelaiio.playbooks-nginx
 
-[![Build Status](https://travis-ci.org/nephelaiio/ansible-playbooks-nginxproxy.svg?branch=master)](https://travis-ci.org/nephelaiio/ansible-playbooks-nginxproxy)
+[![Build Status](https://travis-ci.org/nephelaiio/ansible-playbooks-nginx.svg?branch=master)](https://travis-ci.org/nephelaiio/ansible-playbooks-nginx)
 
 Ansible playbook to install nginx server and configure vhosts
 
@@ -58,8 +58,8 @@ nginx_proxy_headers_extra:
 ## Example Invocation
 
 ```
-git checkout https://galaxy.ansible.com/nephelaiio/ansible-playbooks-nginxproxy nginxproxy
-ansible-playbook -i inventory/ nginxproxy/proxy.yml
+git checkout https://galaxy.ansible.com/nephelaiio/ansible-playbooks-nginx nginx
+ansible-playbook -i inventory/ nginx/proxy.yml
 ```
 
 ## License
