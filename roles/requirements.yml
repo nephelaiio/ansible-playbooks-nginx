@@ -6,3 +6,5 @@
   name: nginxinc.nginx
 - src: nephelaiio.acme_certificate_route53
   version: 1.0.1
+- src: nephelaiio.acme_certificate_cloudflare
+  version: 0.1.0

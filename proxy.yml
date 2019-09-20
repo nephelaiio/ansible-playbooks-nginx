@@ -11,8 +11,6 @@
     acme_certificate_chainfile: "/etc/nginx/{{ acme_certificate_domain }}.chain.crt"
     acme_certificate_keyfile: "/etc/nginx/{{ acme_certificate_domain }}.key"
     acme_certificate_add_ca: yes
-    acme_certificate_aws_accesskey_id: "{{ nginx_proxy_aws_accesskey_id | default(lookup('env', 'AWS_ACCESS_KEY_ID')) }}"
-    acme_certificate_aws_accesskey_secret: "{{ nginx_proxy_aws_accesskey_secret | default(lookup('env', 'AWS_SECRET_ACCESS_KEY')) }}"
 
     nginx_proxy_headers_default:
       header_host:
@@ -145,6 +143,22 @@
     - name: generate certificates
       import_role:
         name: nephelaiio.acme_certificate_route53
+      vars:
+        acme_certificate_aws_accesskey_id: "{{ nginx_proxy_aws_accesskey_id | default(lookup('env', 'AWS_ACCESS_KEY_ID')) }}"
+        acme_certificate_aws_accesskey_secret: "{{ nginx_proxy_aws_accesskey_secret | default(lookup('env', 'AWS_SECRET_ACCESS_KEY')) }}"
+      when:
+        - nginx_proxy_aws_accesskey_id is defined or 'AWS_ACCESS_KEY_ID' in ansible_env
+        - nginx_proxy_aws_accesskey_secret is defined or 'AWS_SECRET_ACCESS_KEY' in ansible_env
+
+    - name: generate certificates
+      import_role:
+        name: nephelaiio.acme_certificate_cloudflare
+      vars:
+        acme_certificate_cf_account_email: "{{ nginx_proxy_cf_account_email | default(lookup('env', 'CF_ACCOUNT_EMAIL')) }}"
+        acme_certificate_cf_account_token: "{{ nginx_proxy_cf_account_token | default(lookup('env', 'CF_ACCOUNT_TOKEN')) }}"
+      when:
+        - nginx_proxy_cf_account_email is defined or 'CF_ACCOUNT_EMAIL' in ansible_env
+        - nginx_proxy_cf_account_token is defined or 'CF_ACCOUNT_TOKEN' in ansible_env
 
     - name: configure nginx
       import_role:
