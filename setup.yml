@@ -3,9 +3,15 @@
 
   hosts: localhost
 
+  connection: local
+
   strategy: linear
 
   tasks:
+
+    - name: install pip requirements
+      pip:
+        requirements: "{{ playbook_dir }}/requirements.txt"
 
     - name: run ansible galaxy
       command: ansible-galaxy install -r roles/requirements.yml -p galaxy/ --force

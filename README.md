@@ -17,17 +17,19 @@ The following lists the group targets and descriptions for every playbook
 The following parameters are available/required for playbook invocation
 
 ### [proxy.yml](proxy.yml):
-| required | variable                          | description                                                 | default                                |
-| ---      | ---                               | ---                                                         | ---                                    |
-| *yes*    | nginx_proxy_url                   | target awx url                                              | _undefined_                            |
-| *yes*    | nginx_proxy_aws_access_key_id     | an ec2 key id with route53 management rights                | lookup('env', 'AWS_ACCESS_KEY_ID')     |
-| *yes*    | nginx_proxy_aws_access_key_secret | an ec2 key secret                                           | lookup('env', 'AWS_SECRET_ACCESS_KEY') |
-| no       | nginx_proxy_upstream_servers      | the set of proxy upstream servers (*)                       | _undefined_                            |
-| no       | nginx_proxy_upstream_group        | the inventory group for upstream servers (*)                | _undefined_                            |
-| no       | nginx_proxy_pdns_url              | pdns api url for dns record update                          | _undefined_                            |
-| no       | nginx_proxy_pdns_api_key          | pdns api key for dns record update                          | _undefined_                            |
-| no       | nginx_proxy_headers               | complete set of proxy headers to define (override defaults) | _undefined_                           |
-| no       | nginx_proxy_headers_extra         | set of extra proxy headers to define (augment defaults)     | {}                                     |
+| required | variable                          | default                                        | description                                                 |   |
+| ---      | ---                               | ---                                            | ---                                                         |   |
+| *yes*    | nginx_proxy_url                   | _undefined_                                    | target awx url                                              |   |
+| *yes*    | nginx_proxy_aws_access_key_id     | lookup('env', 'AWS_ACCESS_KEY_ID')             | an ec2 key id with route53 management rights                |   |
+| *yes*    | nginx_proxy_aws_access_key_secret | lookup('env', 'AWS_SECRET_ACCESS_KEY')         | an ec2 key secret                                           |   |
+| no       | nginx_proxy_upstream_servers      | _undefined_                                    | the set of proxy upstream servers (*)                       |   |
+| no       | nginx_proxy_upstream_group        | _undefined_                                    | the inventory group for upstream servers (*)                |   |
+| no       | nginx_proxy_pdns_url              | _undefined_                                    | pdns api url for dns record update                          |   |
+| no       | nginx_proxy_pdns_api_key          | _undefined_                                    | pdns api key for dns record update                          |   |
+| no       | nginx_proxy_headers               | _undefined_                                    | complete set of proxy headers to define (override defaults) |   |
+| no       | nginx_proxy_headers_extra         | {}                                             | set of extra proxy headers to define (augment defaults)     |   |
+| no       | nginx_proxy_upstream_name         | "{{ nginx_proxy_url / urlsplit('hostname') }}" | nginx config upstream name                                  |   |
+| no       | nginx_proxy_upstream_scheme       | "{{ nginx_proxy_url / urlsplit('scheme) }}"    | nginx config upstream protocol                              |   |
 
 (*) Strictly one of these variables must be defined
 

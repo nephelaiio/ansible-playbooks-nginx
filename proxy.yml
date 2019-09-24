@@ -11,6 +11,8 @@
     acme_certificate_chainfile: "/etc/nginx/{{ acme_certificate_domain }}.chain.crt"
     acme_certificate_keyfile: "/etc/nginx/{{ acme_certificate_domain }}.key"
     acme_certificate_add_ca: yes
+    _nginx_proxy_upstream_name: "{{ acme_certificate_domain }}"
+    _nginx_proxy_upstream_scheme: http
 
     nginx_proxy_headers_default:
       header_host:
@@ -76,11 +78,11 @@
           locations:
             default:
               location: /
-              proxy_pass: "http://{{ acme_certificate_domain }}"
+              proxy_pass: "{{ nginx_proxy_upstream_scheme | default(_nginx_proxy_upstream_scheme) }}://{{ nginx_proxy_upstream_name | default(_nginx_proxy_upstream_name) }}"
               proxy_set_header: "{{ nginx_proxy_headers | default(nginx_proxy_headers_default | combine(nginx_proxy_headers_extra | default({}))) }}"
         upstreams:
           upstream:
-            name: "{{ acme_certificate_domain }}"
+            name: "{{ nginx_proxy_upstream_name | default(_nginx_proxy_upstream_name) }}"
             lb_method: least_conn
             zone_name: upstream
             zone_size: 32k
