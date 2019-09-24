@@ -93,11 +93,13 @@
 
   tasks:
 
-    - fail:
+    - name: check nginx_proxy_url variable
+      fail:
         msg: "nginx_proxy_url must be defined"
       when: nginx_proxy_url is not defined
 
-    - fail:
+    - name: check nginx_proxy_upstream_group and nginx_proxy_upstream_servers variables
+      fail:
         msg: "only one of nginx_proxy_upstream_group and nginx_proxy_upstream_servers must be defined"
       when: checklist | select() | list | length != 1
       vars:
